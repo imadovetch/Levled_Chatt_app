@@ -28,6 +28,7 @@ class Chat implements MessageComponentInterface {
         $objChatroom->setUserId($data['userId']);
         $objChatroom->setMsg($data['msg']);
         $objChatroom->setCreatedOn(date("Y-m-d h:i:s"));
+        $objChatroom->setroomid($data['room']);
         if($objChatroom->saveChatRoom()) {
             $objUser = new \users;
             $objUser->setId($data['userId']);
