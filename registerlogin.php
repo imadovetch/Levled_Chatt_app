@@ -1,8 +1,16 @@
 <?php 
-// echo $_POST['email'];
-// echo $_POST['uname'];
 
-                echo 'hi ikmad';
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: POST");
+header("Access-Control-Allow-Headers: Content-Type");
+header("Content-Type: application/json");
+
+
+$uname = isset($_POST['uname']) ? $_POST['uname'] : '';
+$email = isset($_POST['email']) ? $_POST['email'] : '';
+
+
+                
 				session_start();
 				require("db/users.php");
 				$objUser = new users;
@@ -14,12 +22,12 @@
 			 	if(is_array($userData) && count($userData)>0) {
 			 		$objUser->setId($userData['id']);
 			 		if($objUser->updateLoginStatus()) {
-			 			echo "User login..";
-			 			$_SESSION['user'] = $userData;
                         
-			 			header("location: chatroom.php");
+			 			$_SESSION['user'][$userData['id']] = $userData;
+                         echo json_encode(['message' => $userData]);
+			 			// header("location: chatroom.php");
 			 		} else {
-			 			echo "Failed to login.";
+                        echo json_encode(['message' => 'FAILED LOGED']);
 			 		}
 			 	} else {
 				 	if($objUser->save()) {
@@ -33,10 +41,10 @@
 							'last_login'=> $objUser->getLastLogin() 
 						];
 
-				 		echo "User Registred..";
-				 		header("location: chatroom.php");
+                        echo json_encode(['messageregister' => $_SESSION['user'][$lastId]]);
+				 		// header("location: chatroom.php");
 				 	} else {
-				 		echo "Failed..";
+                        echo json_encode(['message' => 'FAILLED LOGED']);
 				 	}
 				 }
 			
