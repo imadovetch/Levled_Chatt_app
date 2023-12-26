@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Chat application in php using web scocket programming</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+
+	<style type="text/css">
+		#messages {
+			height: 200px;
+			background: whitesmoke;
+			overflow: auto;
+		}
+		#chat-room-frm {
+			margin-top: 10px;
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+	
+		<div class="row">
+			<div class="col-md-4">
+				
+				<table class="table table-striped">
+					<thead>
+						<tr>
+							<td class="houwa">
+								
+							</td>
+							<td align="right" colspan="2">
+								<input type="button" class="btn btn-warning" id="leave-chat" name="leave-chat" value="Leave">
+							</td>
+						</tr>
+						<tr>
+							<th colspan="3">Users</th>
+						</tr>
+					</thead>
+					<tbody class="houma">
+						
+					</tbody>
+				</table>
+			</div>
+			<div class="col-md-8">
+				<div id="messages">
+					<table id="chats" class="table table-striped">
+					  <thead>
+					    <tr>
+					      <th colspan="4" scope="col"><strong>Chat Room</strong></th>
+					    </tr>
+					  </thead>
+					  <tbody class="chat">
+					  	
+					  </tbody>
+					</table>
+				</div>
+					
+				<form id="chat-room-frm" method="post" action="">
+					<div class="form-group">
+                    	<textarea class="form-control" id="msg" name="msg" placeholder="Enter Message"></textarea>
+	                </div>
+	                <div class="form-group">
+	                    <input type="button" value="Send" class="btn btn-success btn-block" id="send" name="send">
+	                </div>
+			    </form>
+			</div>
+		</div>
+	</div>
+
+</body>
+<script type="text/javascript">
+    
+    document.querySelector('.houwa').innerHTML = ''
+    
+    console.log('hi')
+            var formData = new FormData();
+        formData.append("email", "imad@gmail.com");  
+        formData.append("uname", "ahmed");        
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', 'http://localhost/chat_app/chatroom.php', true);
+
+        xhr.onload = function () {
+            
+           
+        var response = JSON.parse(xhr.responseText);
+        var houwaData = response.houwa;
+        var usersData = response.users;
+        var houmaElement = document.querySelector('.houma');
+            // Assuming houwaData is an object containing user information
+var houwaData = response.houwa;
+
+// Get the element where you want to display the user information
+var houwaElement = document.querySelector('.houwa');
+
+// Create an HTML string to append user information
+var HTMLSTRINGUSER = '';
+
+// Assuming houwaData contains properties like 'name' and 'email'
+HTMLSTRINGUSER += '<input type="hidden" name="userId" id="userId" value="' + houwaData.id + '">';
+HTMLSTRINGUSER += '<div>' + houwaData.name + '</div>';
+HTMLSTRINGUSER += '<div>' + houwaData.email + '</div>';
+
+// Set the innerHTML of the houwaElement to the generated HTML string
+houwaElement.innerHTML = HTMLSTRINGUSER;
+
+
+
+var messagatData = response.messagat;
+
+var chatElement = document.querySelector('.chat');
+
+var htmlstring2 = '';
+
+messagatData.forEach(function (chatMessage) {
+    userId = '1';
+    var from = (userId === chatMessage.userid) ? 'Me' : chatMessage.name;
+    var timestamp = new Date(chatMessage.created_on).toLocaleString();
+
+    // Append chat message to the HTML string
+    htmlstring2 += '<tr>';
+    htmlstring2 += '<td valign="top"><div><strong>' + from + '</strong></div><div>' + chatMessage.msg + '</div></td>';
+    htmlstring2 += '<td align="right" valign="top">' + timestamp + '</td>';
+    htmlstring2 += '</tr>';
+});
+
+chatElement.innerHTML = htmlstring2;
+console.log("hi" + htmlstring2)
+
+ 
+var htmlString = '';
+
+
+usersData.forEach(function(user) {
+    var color = user.login_status === '1' ? 'green' : 'red';
+    console.log(color)
+    htmlString += '<tr>';
+    htmlString += '<td>' + user.name + '</td>';
+    htmlString += '<td><span class="glyphicon glyphicon-globe" style="color: ' + color + '"></span></td>';
+    htmlString += '<td>' + user.last_login + '</td>';
+    htmlString += '</tr>';
+});
+console.log(htmlString)
+
+houmaElement.innerHTML = htmlString;
+
+        var messagatData = response.messagat;
+
+    
+        console.log("User Data:", houwaData);
+        };
+
+        xhr.onerror = function () {
+            console.error('Request failed');
+        };
+
+        xhr.send(formData);
+
+
+
+	document.addEventListener("DOMContentLoaded", function() {
+    var conn = new WebSocket('ws://localhost:8080');
+
+    conn.onopen = function(e) {
+        console.log("Connection established!");
+    };
+
+    conn.onmessage = function(e) {
+        console.log(e.data);
+        var data = JSON.parse(e.data);
+        var row = '<tr><td valign="top"><div><strong>' + data.from +'</strong></div><div>'+data.msg+'</div><td align="right" valign="top">'+data.dt+'</td></tr>';
+        document.getElementById('chats').getElementsByTagName('tbody')[0].insertAdjacentHTML('afterbegin', row);
+    };
+
+    conn.onclose = function(e) {
+        console.log("Connection Closed!");
+    };
+
+    document.getElementById("send").addEventListener("click", function(){
+        var userId  = 1;
+        var msg     = document.getElementById("msg").value;
+        var data = {
+            userId: userId,
+            msg: msg,
+            'room': 1
+            
+        };
+        conn.send(JSON.stringify(data));
+        document.getElementById("msg").value = "";
+    });
+
+    document.getElementById("leave-chat").addEventListener("click", function(){
+        var userId  = document.getElementById("userId").value;
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "http://localhost/chat_app/action.php", true);
+        xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                var result = JSON.parse(xhr.responseText);
+                if(result.status == 1) {
+                    conn.close();
+                    window.location.href = "index.php";
+                } else {
+                    console.log(result.msg);
+                }
+            }
+        };
+        xhr.send("userId=" + 1 + "&action=leave");
+    });
+});
+
+</script>
+</html>
+
+<!-- <?php 
+					  		foreach ($chatrooms as $key => $chatroom) {
+
+					  			if($userId == $chatroom['userid']) {
+					  				$from = "Me";
+					  			} else {
+					  				$from = $chatroom['name'];
+					  			}
+					  			echo '<tr><td valign="top"><div><strong>'.$from.'</strong></div><div>'.$chatroom['msg'].'</div><td align="right" valign="top">'.date("d/m/Y h:i:s A", strtotime($chatroom['created_on'])).'</td></tr>';
+					  		}
+					  	 ?>
+
+                           <?php 
+                           foreach ($users as $key => $user) {
+                               $color = 'color: red';
+                               if($user['login_status'] == 1) {
+                                   $color = 'color: green';
+                               }
+                               if(!isset($_SESSION['user'][$user['id']])) {
+                               echo "<tr><td>".$user['name']."</td>";
+                               echo "<td><span class='glyphicon glyphicon-globe' style='".$color."'></span></td>";
+                               echo "<td>".$user['last_login']."</td></tr>";
+                               }
+                           }
+                        ?>
+                        <?php 
+								
+                        foreach ($_SESSION['user'] as $key => $user) {
+                            $userId = $key;
+                            echo '<input type="hidden" name="userId" id="userId" value="'.$key.'">';
+                            echo "<div>".$user['name']."</div>";
+                            echo "<div>".$user['email']."</div>";
+                        }
+                     ?> -->
+
+                     
