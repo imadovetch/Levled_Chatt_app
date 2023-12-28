@@ -1,7 +1,7 @@
 <?php 
 	class DbConnect {
 		private $host = 'localhost';
-		private $dbName = 'websocket';
+		private $dbName = 'websocket2';
 		private $user = 'root';
 		private $pass = '';
 
