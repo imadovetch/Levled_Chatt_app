@@ -6,7 +6,21 @@ if($_SERVER['REQUEST_METHOD'] === "POST"){
        
         
         
-        $usersArray = $users->selectWhere("*", "users", "id IN (SELECT user_id FROM friends WHERE friend_id = {$data['id']} AND status = 'accepted')");
+        $usersArray = $users->selectWhere(
+            "*", 
+            "users", 
+            "id IN (
+                SELECT CASE
+                    WHEN friend_id = {$data['id']} THEN user_id
+                    WHEN user_id = {$data['id']} THEN friend_id
+                END
+                FROM friends 
+                WHERE (friend_id = {$data['id']} OR user_id = {$data['id']}) 
+                AND status = 'accepted'
+            )"
+        );
+        
+  
         
 
         $filteredArray = [];

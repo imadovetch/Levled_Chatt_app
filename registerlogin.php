@@ -41,7 +41,7 @@ $email = isset($_POST['email']) ? $_POST['email'] : '';
 							'last_login'=> $objUser->getLastLogin() 
 						];
 
-                        echo json_encode(['messageregister' => $_SESSION['user'][$lastId]]);
+                        echo json_encode(['message' => $_SESSION['user'][$lastId]]);
 				 		// header("location: chatroom.php");
 				 	} else {
                         echo json_encode(['message' => 'FAILLED LOGED']);
